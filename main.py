@@ -182,7 +182,11 @@ print(numbers)
 
 
 # Задание №13
-import pprint
+# В задании создан словарь, с информацией о разных устройствах.
+# Необходимо запросить у пользователя ввод имени устройства (r1, r2 или sw1).
+# И вывести информацию о соответствующем устройстве
+
+'''
 devices = {
     'r1': {
         'location': 'Bukhara',
@@ -208,10 +212,23 @@ devices = {
         'routing': 'True'
     }
 }
+user = input('Введите название устройства [r1, r2, sv1] ')
 
-# pprint.pprint(devices['r1'], width=40)
-for i in devices['sw1']:
-   pprint.pprint(devices['sw1'], width=40) 
+r = list(devices['r1'].values())
+r1 = list(devices['r1'].keys())
+for i in range(len(devices['r1'])):
+    if user == 'r1':
+        print(f'{r1[i]}\t \t{r[i]} ')
 
+r2 = list(devices['r2'].values())
+r3 = list(devices['r2'].keys())
+for y in range(len(devices['r2'])):
+    if user == 'r2':
+        print(f'{r3[y]}\t \t{r2[y]}')
 
-
+sw1 = list(devices['sw1'].values())
+sw2 = list(devices['sw1'].keys())
+for u in range(len(devices['sw1'])):
+    if user == 'sw1':
+        print(f'{sw2[u]}\t \t{sw1[u]}')
+'''
