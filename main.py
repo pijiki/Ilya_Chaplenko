@@ -167,19 +167,18 @@ print(numbers)
 
 # Задание №12
 
-# numbers2 = {}
-# numbers1 = {}
-# config_sw1 = 'switchport trunk allowed vlan 10,20,30,40,50,70'.split(' ')
-# config_sw2 = 'switchport trunk allowed vlan 80,90,10,45,50,100'.split(' ')
-# num1 = config_sw1[4].split(',')
-# num2 = config_sw2[4].split(',')
-# for i in num1:
-#     numbers1.update(i)
-#     for i in num2:
-#         numbers2.update(i)
-#         print(numbers1)
-#         print(numbers1)
+'''
+config_sw1 = 'switchport trunk allowed vlan 10,20,30,40,50,70'.split(' ')[4]
+config_sw2 = 'switchport trunk allowed vlan 80,90,10,45,50,100'.split(' ')[4]
 
+new_config1 = set(config_sw1.split(','))
+new_config2 = set(config_sw2.split(','))
+
+print(tuple(new_config2 & new_config1))
+print(tuple(new_config1 - new_config2))
+print(tuple(new_config2 ^ new_config1))
+print(tuple(new_config2 | new_config1))
+'''
 
 # Задание №13
 # В задании создан словарь, с информацией о разных устройствах.
@@ -232,3 +231,55 @@ for u in range(len(devices['sw1'])):
     if user == 'sw1':
         print(f'{sw2[u]}\t \t{sw1[u]}')
 '''
+
+# Задание №14
+
+
+goods = {
+ 'Лампа': '12345',
+ 'Стол': '23456',
+ 'Диван': '34567',
+ 'Стул': '45678',
+}
+store = {
+ '12345': [
+  {
+   'quantity': 27,
+   'price': 42
+  },
+ ],
+ '23456': [
+  {
+   'quantity': 22,
+   'price': 510
+  },
+  {
+   'quantity': 32,
+   'price': 520
+  },
+],
+ '34567': [
+  {
+   'quantity': 2,
+   'price': 1200
+  },
+  {
+   'quantity': 1,
+    'price': 1150
+  },
+ ],
+ '45678': [
+  {
+   'quantity': 50,
+   'price': 100
+  },
+  {
+   'quantity': 12,
+   'price': 95
+  },
+  {
+   'quantity': 43,
+   'price': 97
+  },
+ ],
+}
