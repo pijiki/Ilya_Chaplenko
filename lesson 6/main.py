@@ -283,3 +283,10 @@ store = {
   },
  ],
 }
+
+
+num = 0
+for i in store:
+    print(i['45678'])
+    print(i['quantity']['price'])
+    num += i['quantity']['price']
