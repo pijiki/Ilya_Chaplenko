@@ -43,7 +43,6 @@ while True:
     except ValueError:
         print('Результат: ', num1 + num2)
 '''
-<<<<<<< HEAD
 
 
 # Задание №5
