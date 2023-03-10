@@ -43,6 +43,7 @@ while True:
     except ValueError:
         print('Результат: ', num1 + num2)
 '''
+<<<<<<< HEAD
 
 
 # Задание №5
@@ -157,6 +158,5 @@ text = open("lesson 7/files/romeo.txt", mode="r", encoding='UTF-8').read().split
 text.sort()
 print(text)
 '''
-
 
 
