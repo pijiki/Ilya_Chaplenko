@@ -43,7 +43,7 @@ while True:
     except ValueError:
         print('Результат: ', num1 + num2)
 '''
-<<<<<<< HEAD
+
 
 
 # Задание №5
@@ -101,6 +101,39 @@ for x in food:
         pass
 '''
 
+# Задание №8
+# Приведенный ниже код делит значения элемента на самого себя,
+# но вылетает с ошибками, необходимо учесть все типы ошибок и 
+# дописать код (условия цикла менять нельзя,
+# использовать полный синтаксис try/except/else)
+'''
+my_list = [2, "C", 10, "20", "micros", 50, 0, '0', '30']
+cnt = 0
+for index in range(len(my_list)+5):
+    cnt += 1
+    try:
+        res = my_list[index] / my_list[index]
+        print(f'{index} / {index} = {res}')
+
+    except ValueError:
+        b = int(index)
+        a = type(b)
+        if a != str:
+            res1 = my_list[index] / my_list[index]
+            print(f'{int(my_list[index])} / {int(my_list[index])} = {res1}')
+        else:
+            pass
+    except TypeError:
+        print(f'Ошибка ValueError с {my_list[index]} так как это тип {type(my_list[index])}')
+
+    except ZeroDivisionError:
+        print('На ноль делить нельзя!')
+    except IndexError:
+        print('Список оказался слишком мал под номером ', cnt - 1 )
+    else:
+        print('Все прошло без ошибок')
+'''
+
 
 # Задание №9
 # Дописать код (нельзя использовать просто except)
@@ -115,7 +148,36 @@ except KeyError:
 else:
     print(search_key, 'Это тот ключ')
 '''
+
+
 # Задание №10
+# Замените первый if на try/except/else
+
+'''
+import sys
+if len(sys.argv) < 2:
+    try:
+        city = sys.argv[1]
+        city = city.lower()
+    except IndexError:
+        print('Вы не указали город!')
+        print('Try again')
+    else:
+        if city == "tashkent"[0:len(city)]:
+            print ("В Ташкенте тепло и солнечно")
+        elif city == "london"[0:len(city)]:
+            print ("В Лондоне пасмурно и сыро")
+        elif city == "moskow"[0:len(city)]:
+            print ("В Москве идёт сильный дождь")
+        elif city == "paris"[0:len(city)]:
+            print ("погода для романтики")
+        elif city == "rio de janeyro"[0:len(city)]:
+            print ("В Рио постоянно карнавалы")
+        else:
+            print ("прогноз не ясен, карантин")  
+'''
+
+# Задание №11
 # Следующий код работает отлично, если пользователь вводит цифровое значение, но всегда есть НО:
 
 '''
@@ -131,7 +193,7 @@ else:
 '''
 
 
-# Задание №11
+# Задание №12
 # Ловить ошибки это конечно здорово, но уметь логировать их и записывать в файл
 # еще лучше, задача разобраться со стандартной библиотекой logging
 
@@ -160,3 +222,15 @@ print(text)
 '''
 
 
+# Задание №16
+# Документ «article.txt» содержит следующий текст: (используйте open)
+'''
+text1 = []
+text2 = open("lesson 7/files/article.txt", mode="r", encoding='UTF-8').read().split()
+for i in text2:
+    text1.append(len(i))
+    if len(i) == max(text1):
+        print('Слова имеющие максимальную длинну: ', i.split())
+    else:
+        pass
+'''
