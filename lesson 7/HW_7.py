@@ -222,15 +222,39 @@ print(text)
 '''
 
 
+# Задание №15
+# Напишите код программы, которая будет открывать файл «article.txt» и выводить на 
+# печать построчно последние строки в количестве lines (число которую можно
+# запросить у пользователя). Число должно быть положительным (используйте with open)
+
+'''
+num  = int(input('Сколько  последних строк  распечатать: ')) + 1
+if num > 0:
+    with open("lesson 7/files/article.txt", mode="r", encoding='UTF-8') as lines:
+        lines = list(lines)
+        lines = reversed(lines)
+        cnt = 0
+        for line in lines:
+            cnt += 1
+            if cnt != num:
+                print(line.strip())
+            else: break
+else:
+    print('Укажите положительное число !')
+'''
+
+
+        
 # Задание №16
 # Документ «article.txt» содержит следующий текст: (используйте open)
 '''
 text1 = []
 text2 = open("lesson 7/files/article.txt", mode="r", encoding='UTF-8').read().split()
-for i in text2:
-    text1.append(len(i))
-    if len(i) == max(text1):
-        print('Слова имеющие максимальную длинну: ', i.split())
+for words in text2:
+    text1.append(len(words))
+    if len(words) == max(text1):
+        print('Слова имеющие максимальную длинну: ', words.split())
     else:
         pass
 '''
+
