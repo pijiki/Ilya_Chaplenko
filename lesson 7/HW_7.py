@@ -207,6 +207,24 @@ try:
 except ZeroDivisionError as error:
     logger.error(error)
 '''
+# Задание №13
+# Откройте файл mbox-short.txt, “прочитайте” каждую строку в этом файле и найдите 
+# строки, соответствующие данной: “From Stephen.marquard@uct.ac.za Sat Jan 5 09:14:16 2008” 
+# . Затем распечатайте все ВХОДЯЩИЕ email адреса и их общее количество. 
+# Для решения данной задачи используйте методы строк. (используйте with open)
+
+'''
+cnt = []
+with open("lesson 7/files/mbox-short.txt", mode="r", encoding="UTF-8") as file:
+    for line in file:
+        if line.startswith('From '):
+            text = line.split()
+            email = text[1]
+            cnt.append(email)
+for mail in cnt:
+    print(mail)
+print('Колл-во входящих писем: ', len(cnt))
+'''
 
 
 # Задание №14
@@ -257,4 +275,3 @@ for words in text2:
     else:
         pass
 '''
-
