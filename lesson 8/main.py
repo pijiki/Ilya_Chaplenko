@@ -151,3 +151,21 @@ def func_sum (integer: int) -> int:
 '''
 
 
+# Задание №12
+# Создайте пакет ‘figures’, состоящий из трех подпакетов: ‘triangle’, ‘circle’, ‘square’.
+
+# Задание 1
+'''
+from figures.circle.code import circle_perimeter, circle_area
+print(circle_perimeter(23))
+'''
+
+# Задание №13
+
+'''
+def simple_multiplication(number) :
+    if number % 2 == 0:
+        return number * 8
+    else:
+        return number * 9
+'''
