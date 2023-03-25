@@ -88,7 +88,7 @@ with open('lesson 10/files/json and csv files/todos_to_csv.csv', mode='w', encod
         result.writerow(line)
 '''
 
-# c)
+# c) с CSV файла обратно конвертировать данные в JSON формат и создать файл
 
 '''
 import json
