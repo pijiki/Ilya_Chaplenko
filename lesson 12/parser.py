@@ -14,7 +14,7 @@ while True:
     json_data = []
     for i in ['w_col_wide2', 'w_col1', 'w_col2', 'w_col_wide']:
         for article in soup.find_all('div', class_=i):
-            for title in article.find('div', class_='b_ear-title'): title = title.get_text(strip=True)
+            for title in article.find_all('div', class_='b_ear-title'): title = title.get_text(strip=True)
             for intro in article.find_all('div', class_='b_ear-intro'): intro = intro.get_text(strip=True)
             for time in article.find_all('time', class_='b_ear-time'): time = time.get_text(strip=True)
             for image in article.find_all('img'): image = image['src']
