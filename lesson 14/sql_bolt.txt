@@ -61,6 +61,7 @@ SELECT * FROM movies WHERE year NOT BETWEEN 2000 AND 2010;
 
 SELECT * FROM movies WHERE year BETWEEN 1995 AND 2010 LIMIT 5;
 
+
 ------------------------------------
 
 # Task №10
