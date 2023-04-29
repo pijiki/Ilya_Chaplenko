@@ -54,7 +54,7 @@ SELECT * FROM movies WHERE year BETWEEN 2000 AND 2010;
 
 SELECT * FROM movies WHERE year NOT BETWEEN 2000 AND 2010;
 
-------------------------------------
+-------------------------------------
 
 # Task №9
 # Find the first 5 Pixar movies and their release year 
@@ -68,8 +68,7 @@ SELECT * FROM movies WHERE year BETWEEN 1995 AND 2010 LIMIT 5;
 # Find all the Toy Story movies
 
 SELECT * FROM movies
-WHERE title IN ("Toy Story", "Toy Story 2",
-"Toy Story 3");
+WHERE title LIKE "Toy Story%%";
 
 ------------------------------------
 
@@ -77,7 +76,7 @@ WHERE title IN ("Toy Story", "Toy Story 2",
 # Find all the movies directed by John Lasseter
 
 SELECT * FROM movies
-WHERE director IN ("John Lasseter");
+WHERE director = "John Lasseter";
 
 ------------------------------------
 
@@ -85,7 +84,7 @@ WHERE director IN ("John Lasseter");
 # Find all the movies (and director) not directed by John Lasseter
 
 SELECT * FROM movies
-WHERE director NOT IN ("John Lasseter");
+WHERE director != "John Lasseter";
 
 ------------------------------------
 
@@ -100,21 +99,27 @@ WHERE title LIKE "WALL-%";
 # Task №14
 # List all directors of Pixar movies (alphabetically), without duplicates 
 
-SELECT DISTINCT director FROM movies ORDER BY direct;
+SELECT DISTINCT director 
+FROM movies ORDER BY director;
 
 ------------------------------------
 
 # Task №15
 # List the last four Pixar movies released (ordered from most recent to least)
 
-SELECT * FROM movies ORDER BY year DESC LIMIT 4;
+SELECT *
+FROM movies 
+ORDER BY year DESC
+LIMIT 4;
 
 ------------------------------------
 
 # Task №16
 # List the first five Pixar movies sorted alphabetically 
 
-SELECT * FROM movies ORDER BY title LIMIT 5;
+SELECT * FROM movies
+ORDER BY title 
+LIMIT 5;
 
 ------------------------------------
 
@@ -122,7 +127,8 @@ SELECT * FROM movies ORDER BY title LIMIT 5;
 # List the next five Pixar movies sorted alphabetically
 
 SELECT * FROM movies
-ORDER BY title  LIMIT 5 OFFSET 5 ;
+ORDER BY title 
+LIMIT 5 OFFSET 5;
 
 ------------------------------------
 
@@ -148,8 +154,7 @@ ORDER BY latitude DESC;
 
 SELECT * FROM north_american_cities
 WHERE  longitude < -87.629798
-ORDER BY longitude
-;
+ORDER BY longitude;
 
 ------------------------------------
 
@@ -157,8 +162,12 @@ ORDER BY longitude
 # List the two largest cities in Mexico (by population) 
 
 SELECT * FROM north_american_cities
-WHERE  country = "Mexico"
-ORDER BY population DESC LIMIT 2;
+WHERE Country = "Mexico"
+ORDER BY 
+population DESC 
+LIMIT 2;
+
+
 
 ------------------------------------
 
@@ -169,13 +178,15 @@ ORDER BY population DESC LIMIT 2;
 SELECT * FROM north_american_cities
 WHERE  country = "United States"
 ORDER BY population 
-DESC LIMIT 2 OFFSET 2;
+DESC LIMIT 2 
+OFFSET 2;
 
 ------------------------------------
 
 # Task №23
 # Find the domestic and international sales for each movie
 
-SELECT title, domestic_sales, international_sales FROM movies
+SELECT title, domestic_sales, international_sales 
+FROM movies
 INNER JOIN boxoffice
     ON movies.id = boxoffice.movie_id;
