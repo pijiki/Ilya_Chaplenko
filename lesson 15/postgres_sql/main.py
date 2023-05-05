@@ -5,7 +5,7 @@
  
 
 from db import get_token, db_history_write, db_history_read
-from keyboards import generate_languages, get_key
+from keyboards import generate_languages, get_key, LANGUAGES
 
 from googletrans import Translator
 
@@ -58,30 +58,35 @@ async def start_questions(message: Message):
     await Questions.src.set()
     await message.answer('С какого языка хотите перевести? ',
                          reply_markup=generate_languages()) 
-
-    
+        
 @dp.message_handler(content_types=['text'], state=Questions.src)
 async def confirm_src_ask_dst(message: Message, state: FSMContext):
-    if message.text in ['/start', '/help', '/about', '/history']:
-        await state.finish()
-        await command_start(message)
-    else:
-
+    if message.text in LANGUAGES.values():
         async with state.proxy() as data:
             data['src'] = message.text
-
         await Questions.next()
         await message.answer(f'Вы выбрали {message.text}\nВыберите на какой язык перевести',
-                             reply_markup=generate_languages())
+                                reply_markup=generate_languages())
+    elif message.text in ['/start', '/help', '/about', '/history']:
+            await state.finish()
+    else: 
+        await message.answer('Такого языка нет!')
 
-@dp.message_handler(content_types=['text'], state=Questions.dst)  # Реагируем на ответ второго вопроса
-async def confirm_dst_ask_text(message: Message, state: FSMContext):  # Откроем доступ к памяти
-    async with state.proxy() as data:  # Открываем наше хранилище
-        data['dst'] = message.text
 
-    await Questions.next()
-    await message.answer(f"Начинаем перевод с {data['src']}, на {data['dst']}\nВведите текст, который хотите перевести",
-                         reply_markup=ReplyKeyboardRemove())
+    
+
+@dp.message_handler(content_types=['text'], state=Questions.dst)  
+async def confirm_dst_ask_text(message: Message, state: FSMContext):
+    if message.text in LANGUAGES.values():
+        async with state.proxy() as data: 
+            data['dst'] = message.text
+        await Questions.next()
+        await message.answer(f"Начинаем перевод с {data['src']}, на {data['dst']}\nВведите текст, который хотите перевести",
+                            reply_markup=ReplyKeyboardRemove())
+    else: 
+        await message.answer('Такого языка нет!')
+
+
 
 
 @dp.message_handler(content_types=['text'], state=Questions.text)
@@ -96,7 +101,7 @@ async def confirm_text_translate(message: Message, state: FSMContext):
         translator = Translator()
         trans_text = translator.translate(text=text, src=src, dest=dst).text
     except:
-        await message.answer('Ошибка в написания языка повторите попытку!')
+        await message.answer('Ошибка в написаниях слова повторите попытку!')
         await start_questions(message)
     else:
         chat_id = message.chat.id
