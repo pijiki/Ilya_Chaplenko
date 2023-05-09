@@ -1,3 +1,5 @@
+# https://t.me/dost_avka_bot
+
 from database import *
 from keyboards import *
 
