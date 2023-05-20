@@ -4,8 +4,8 @@
 
  
 
-from db import get_token, db_history_write, db_history_read
-from keyboards import generate_languages, get_key, LANGUAGES
+from library.db import get_token, db_history_write, db_history_read
+from library.keyboards import generate_languages, get_key, LANGUAGES
 
 from googletrans import Translator
 
