@@ -3,10 +3,10 @@
 from database import *
 from keyboards import *
 
-from googletrans import Translator 
-
 from aiogram import Bot, Dispatcher, executor
-from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove, InputMedia
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove, InputMedia, LabeledPrice
+                                                        
+
 
 
 import os
@@ -14,6 +14,7 @@ from dotenv import *
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
 ADMIN = os.getenv('ADMIN')
+PAYMENT = os.getenv('PAYMENT')
 
 
 bot = Bot(TOKEN, parse_mode='HTML')
@@ -99,7 +100,7 @@ async def show_detail_product(call: CallbackQuery):
     product = get_product_detail(product_id)
     cart_id = get_user_cart_id(chat_id)
     update_to_cart(cost=product[3], quantity=1, cart_id=cart_id)
-    cost, quantity = get_cost_product(cart_id)
+    cost, _ = get_cost_product(cart_id)
     await bot.send_message(chat_id, 'Выберите модификатор:',  reply_markup=back_to_menu())
     await bot.delete_message(chat_id, message_id)
     with open(product[-1], mode='rb') as img:
@@ -168,7 +169,7 @@ async def show_cart(call: CallbackQuery):
     for name, quantity, price in cart_products:
         i += 1
         list_name.append(name)
-        text += f'{i}.\n{name}\nКолличество: {quantity}\nЦена: {price}\n\n'
+        await bot.send_message(chat_id, f'{i}.\n{name}\nКолличество: {quantity}\nЦена: {price}\n\n')
     if total_products and total_price:
         text += f'Общее количество продуктов: {total_products}\nОбщая стоимость корзины: {total_price}'
         await bot.send_message(chat_id, text, reply_markup=buy_food(list_name))
@@ -206,21 +207,42 @@ async def show_basket(message: Message):
     except: await message.answer('Ваша корзина пуста!')
     total_products, total_price = get_total_product_price(cart_id)
     cart_products = get_cart_products(cart_id)
-    text, i = 'Ваша корзинка: \n\n', 0
+    i = 0
     list_name = []
+    await bot.send_message(chat_id, 'Ваша корзинка:')
     for name, quantity, price in cart_products:
         i += 1
         list_name.append(name)
-        text += f'{i}.\n{name}\nКолличество: {quantity}\nЦена: {price}\n\n'
+        text += f'{i}.\nНазвание <b>{name}</b>\nКолличество: {quantity}\nЦена: {price}\n\n'
     if total_products and total_price:
         text += f'Общее количество продуктов: {total_products}\nОбщая стоимость корзины: {total_price}'
-
-        await bot.send_message(chat_id, text, reply_markup=buy_food(list_name))
+        await bot.send_message(chat_id, text=text, reply_markup=buy_food())
     else: await bot.send_message(chat_id, "Ваша корзинa пуста 🤥")
 
+@dp.callback_query_handler(lambda call: 'order_action' in call.data)
+async def order_plus_minus(call: CallbackQuery):
+    action = call.data.split()[-1]
+    message_id = call.message.message_id
+    chat_id = call.from_user.id
+    try:
+        cart_id = get_user_cart_id(chat_id)
+        cost, quantity = get_cost_product(cart_id)
+    except:
+        await bot.delete_message(chat_id, message_id)
+        await bot.send_message(chat_id, "К сожалению вы еще не отправили нам контакт",
+                               reply_markup=generate_phone_button())
+
+    product_name = call.message['caption'].split('\n')[0]
+    product_info = get_detail_product(product_name)
+    if action == '+':
+        update_to_cart(product_info[3], quantity + 1, cart_id)
+    else:
+        update_to_cart(product_info[3], quantity - 1, cart_id)
+    cost, quantity = get_cost_product(cart_id)
+    await bot.edit_message_text(chat_id, f'')
+    cost, quantity = get_cost_product(cart_id)
 @dp.callback_query_handler(regexp=r'buy')
 async def purchace_product(call: CallbackQuery):
-    # TODO Сделать оплату
     message_id = call.message.message_id
     chat_id = call.from_user.id
     cart_id = get_user_cart_id(chat_id)
@@ -228,7 +250,29 @@ async def purchace_product(call: CallbackQuery):
     for name, quantity, price in cart_products:
         insert_history(chat_id, name, quantity, price)
     delete_all()
-    await bot.delete_message(chat_id, message_id)
+    await bot.delete_message(chat_id, message_id)    
+    total_products, total_price = get_total_product_price(cart_id)
+    cart_products = get_cart_products(cart_id)
+    text, i = 'Ваша корзинка: \n\n', 0
+    for name, quantity, price in cart_products:
+        i += 1
+        text += f'{i}.\n{name}\nКолличество: {quantity}\nЦена: {price}\n\n'
+    if total_products and total_price:
+        text += f'Общее количество продуктов: {total_products}\nОбщая стоимость корзины: {total_price}'
+
+    await bot.send_invoice(
+        chat_id=chat_id,
+        title=f"Заказ №{cart_id}",
+        description=text,
+        payload="bot-defined invoice payload",
+        provider_token=PAYMENT,
+        currency='UZS',
+        prices= [
+            LabeledPrice(label="Общая стоимость", amount=int(total_price ** 100)),
+            LabeledPrice(label="Доставка", amount=10000)
+         ]
+
+    )
     await bot.send_message(chat_id, text='Оплачено')
     
 @dp.callback_query_handler(regexp=r'delete')
@@ -236,6 +280,7 @@ async def delete_product(call: CallbackQuery):
     delete_id = call.data.split('_')[-1]
     delete_product_id(id=delete_id)
     await bot.answer_callback_query(call.id, 'Продукт удален')
+    await show_cart(call)
 
 
 @dp.message_handler(regexp=r'⚙ Настройки')
@@ -246,19 +291,6 @@ async def show_admin(message: Message):
     else: 
         await message.answer('Выберите настройки',reply_markup=setings_user())
 
-# @dp.callback_query_handler(regexp=r'language')    
-# async def change_language(call: CallbackQuery):
-#     message_id = call.message.message_id
-#     chat_id = call.from_user.id
-#     await bot.delete_message(chat_id, message_id)
-#     await bot.send_message(chat_id, 'Смнените язык', reply_markup=generate_languages())
-
-# @dp.message_handler(content_types=['text'])
-# async def language_text(message: Message):
-#     if message.text in LANGUAGES.values():
-#         insert_language(get_key_lang(message.text))
-#     else:  
-#         await message.answer('Тыкай на кнопку!')
 
 executor.start_polling(dp)
 

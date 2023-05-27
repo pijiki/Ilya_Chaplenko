@@ -88,18 +88,24 @@ def back_to_menu():
     ], resize_keyboard=True)
 
 
-def buy_food(list_name):
+
+def buy_food():
     markup = InlineKeyboardMarkup(row_width=3)
     button = [
         InlineKeyboardButton(text='Заказать', callback_data='buy')]
     markup.add(*button)
+    return markup
+
+def button (list_name):
+    markup = InlineKeyboardMarkup(row_width=3)
     for name in list_name:
         buttons = [
-            InlineKeyboardButton(text=f'❌ {name}', callback_data=f'delete_{name}')
+            InlineKeyboardButton(text='➖', callback_data='order_action -'),
+            InlineKeyboardButton(text='❌', callback_data=f'delete_{name}'),
+            InlineKeyboardButton(text='➕', callback_data='order_action +'),
             ]
         markup.add(*buttons)
     return markup
-
 # LANGUAGES = {
 #     'ru': "Русский",
 #     'kk': "Казахский",
