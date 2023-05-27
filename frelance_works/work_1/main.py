@@ -1,4 +1,4 @@
-from database import *
+from database import * 
 from keyboards import *
 
 from aiogram import Bot, Dispatcher, executor
