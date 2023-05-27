@@ -1,3 +1,5 @@
+#  https://t.me/Utro_DobroeBot
+
 from db import *
 from keyboards import *
 
@@ -26,7 +28,7 @@ def get_time (lat, lng):
 
 @dp.message_handler(commands=['start', 'help', 'about'])
 async def command_start(message: Message):
-    if message.text == '/start':
+    if message.text == '/start': 
         await message.answer("Вас приветствует Бот для соревнования по утреннему подъему")
         await country_user(message)
     elif message.text == '/about':
