@@ -1,4 +1,6 @@
-from database import *
+# https://t.me/ZakazProdaction_bot
+
+from database import * 
 from keyboards import *
 
 from aiogram import Bot, Dispatcher, executor
