@@ -207,8 +207,7 @@ async def show_basket(message: Message):
     except: await message.answer('Ваша корзина пуста!')
     total_products, total_price = get_total_product_price(cart_id)
     cart_products = get_cart_products(cart_id)
-    i = 0
-    list_name = []
+    i, list_name = i, []
     await bot.send_message(chat_id, 'Ваша корзинка:')
     for name, quantity, price in cart_products:
         i += 1
@@ -241,6 +240,7 @@ async def order_plus_minus(call: CallbackQuery):
     cost, quantity = get_cost_product(cart_id)
     await bot.edit_message_text(chat_id, f'')
     cost, quantity = get_cost_product(cart_id)
+    
 @dp.callback_query_handler(regexp=r'buy')
 async def purchace_product(call: CallbackQuery):
     message_id = call.message.message_id

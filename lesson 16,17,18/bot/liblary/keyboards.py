@@ -106,25 +106,3 @@ def button (list_name):
             ]
         markup.add(*buttons)
     return markup
-# LANGUAGES = {
-#     'ru': "Русский",
-#     'kk': "Казахский",
-#     'uz': "Узбекский",
-#     'de': "Немецкий",
-#     'pl': "Польский",
-#     'en': "Английский"
-# }
-
-# def get_key_lang(value):
-#     for k, v in LANGUAGES.items():
-#         if v == value:
-#             return k
-        
-# def generate_languages():
-#     markup = ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-#     button = []
-#     for lang in LANGUAGES.values():
-#         btn = KeyboardButton(text=lang)
-#         button.append(btn)
-#     markup.add(*button)
-#     return markup
