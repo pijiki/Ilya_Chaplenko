@@ -1,20 +1,23 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, \
     InlineKeyboardButton, InlineKeyboardMarkup
 
-from database import *
+from liblary.utils import *
 
 def generate_phone_button():
+    """Кнопка отправки контакта"""
     return ReplyKeyboardMarkup(
         [
-            [KeyboardButton(text="Отправить свой контакт", request_contact=True)]
+            [KeyboardButton(text="📞 Отправить контакт", request_contact=True)]
         ], resize_keyboard=True
     )
 
 def generate_main_menu():
     return ReplyKeyboardMarkup(
         [
-            [KeyboardButton(text='✅ Сделать заказ')],
-            [KeyboardButton(text='📒 История'), KeyboardButton(text='🛒 Корзинка'), KeyboardButton(text='⚙ Настройки')]
+            [KeyboardButton(text='✔️ Сделать заказ')],
+            [KeyboardButton(text='📒 История'), 
+             KeyboardButton(text='🛒 Корзинка'), 
+             KeyboardButton(text='🛠️ Настройки')]
         ], resize_keyboard=True
     )
 
@@ -23,17 +26,22 @@ def back_to_main_menu():
         [KeyboardButton(text='Главное меню')]
     ], resize_keyboard=True)
 
-def generate_category_menu(cart_id):
-    summary_price = get_sum_price_from_cart(cart_id)[0]
-    categories = get_all_categories()
-
+def generate_category_menu(chat_id):
+    total_price = db_get_final_price(chat_id)
+    categories = db_get_categories()
     markup = InlineKeyboardMarkup(row_width=2)
     markup.row(
-    InlineKeyboardButton(text=f'Ваша корзинка  ({summary_price if summary_price else 0} сумм)', callback_data='cart')
+        InlineKeyboardButton(
+            text=f'Ваша корзинка  ({total_price if total_price else 0} сум)',
+            callback_data='cart'
+        )
     )
     buttons = []
     for category in categories:
-        bnt = InlineKeyboardButton(text=category[1], callback_data=f"category_{category[0]}")
+        bnt = InlineKeyboardButton(
+            text=category.category_name,
+            callback_data=f"category_{category.category_id}"
+        )
         buttons.append(bnt)
     markup.add(*buttons)
     return markup
@@ -41,31 +49,14 @@ def generate_category_menu(cart_id):
 
 def generate_products_by_category(category_id):
     markup = InlineKeyboardMarkup(row_width=2)
-    products = get_products_by_category(category_id)
+    products = db_get_products(category_id)
     buttons = []
     for product in products:
-        btn = InlineKeyboardButton(text=product[1], callback_data=f"product_{product[0]}")
+        btn = InlineKeyboardButton(text=product.product_name, callback_data=f"product_{product.product_id}")
         buttons.append(btn)
     markup.add(*buttons)
     markup.row(
     InlineKeyboardButton(text='⬅ Назад', callback_data='Назад')
-    )
-    return markup
-
-def admin_setings():
-    return ReplyKeyboardMarkup(
-        [
-            [KeyboardButton(text='➕ Добавить категорию TODO')],
-            [KeyboardButton(text='➖ Удалить категорию TODO')],
-            [KeyboardButton(text='Главное меню')]
-        ], resize_keyboard=True
-    )
-
-def setings_user():
-    markup = InlineKeyboardMarkup(row_width=3)
-    markup.row(
-        InlineKeyboardButton(text='⌨ Сменить язык', callback_data='language'),
-        InlineKeyboardButton(text='📞 Сменить номер', callback_data='number')
     )
     return markup
 
@@ -87,22 +78,37 @@ def back_to_menu():
         [KeyboardButton(text='⬅ Назад')]
     ], resize_keyboard=True)
 
-
-
-def buy_food():
+def generate_cart_button(chat_id: int) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=3)
-    button = [
-        InlineKeyboardButton(text='Заказать', callback_data='buy')]
-    markup.add(*button)
+    markup.row(
+        InlineKeyboardButton(
+            text="✅ Оформить заказ",
+            callback_data=f"order"
+        )
+    )
+    cart_products = db_product_for_delete(chat_id)
+    for finally_id, name in cart_products:
+        markup.row(
+            InlineKeyboardButton(
+                text=f"❌ {name}",
+                callback_data=f"delete_{finally_id}"
+            )
+        )
     return markup
 
-def button (list_name):
-    markup = InlineKeyboardMarkup(row_width=3)
-    for name in list_name:
-        buttons = [
-            InlineKeyboardButton(text='➖', callback_data='order_action -'),
-            InlineKeyboardButton(text='❌', callback_data=f'delete_{name}'),
-            InlineKeyboardButton(text='➕', callback_data='order_action +'),
-            ]
-        markup.add(*buttons)
-    return markup
+def generate_setings_button():
+    builder = InlineKeyboardMarkup()
+    builder.row(
+        InlineKeyboardButton(
+            text='Сменить номер',
+            callback_data="change_phone"
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="Админ панель",
+            url ="https://121.0.0.1.com",
+            callback_data="admin_site"
+        )
+    )
+    return builder

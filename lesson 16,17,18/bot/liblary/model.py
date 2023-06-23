@@ -19,11 +19,10 @@ class Users(Base):
     user_id: Mapped[int] = mapped_column(primary_key=True)
     full_name: Mapped[str] = mapped_column(String(50))
     telegram_id: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True)
-    phone: Mapped[int] = mapped_column(BigInteger)
+    phone: Mapped[int] = mapped_column(BigInteger, default=0)
 
     def __str__(self):
         return f"User(user_id={self.user_id!r}, " \
-               f"cart={self.cart!r}, " \
                f"full_name={self.full_name!r}, " \
                f"telegram_id={self.telegram_id!r}, " \
                f"phone={self.phone!r}) "
@@ -60,7 +59,7 @@ class FinallyCarts(Base):
     cart_id: Mapped[int] = mapped_column(ForeignKey('carts.cart_id'))
     product_name: Mapped[str] = mapped_column(String(60), nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, default=0)
-    finall_price: Mapped[DECIMAL] = mapped_column(DECIMAL(10, 2))
+    finall_price: Mapped[DECIMAL] = mapped_column(DECIMAL(12, 2))
     __table_args__ = (UniqueConstraint('cart_id', 'product_name'),)
 
     def __str__(self):
@@ -68,7 +67,7 @@ class FinallyCarts(Base):
                f"cart_id={self.cart_id!r}, " \
                f"product_name={self.product_name!r}, " \
                f"quantity={self.quantity!r}, " \
-               f"final_price={self.final_price!r}) "
+               f"final_price={self.finall_price!r}) "
 
     def __repr__(self):
         return str(self)
@@ -120,7 +119,7 @@ class History(Base):
     telegram_id: Mapped[int] = mapped_column(ForeignKey('users.telegram_id'))
     name: Mapped[str] = mapped_column(String, nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-    price: Mapped[int] = mapped_column(Integer, nullable=False)
+    price: Mapped[DECIMAL] = mapped_column(DECIMAL,nullable=False)
 
     def __str__(self):
         return f"Histories(history_id={self.history_id}, " \
@@ -135,11 +134,13 @@ class History(Base):
 def main():
     """Только для создания таблиц и первичного наполнения"""
     Base.metadata.create_all(engine)
-    categories = ('Лаваши', 'Донары', 'Хот-Доги', 'Десерты', 'Напитки', 'Соусы')
+    categories = ('🌯 Лаваши', '🥙 Донары', '🌭 Хот-Доги', '🧁 Десерты', '🍹 Напитки', '🍕 Пицца')
     products = (
-        (1, 'Мини лаваш', 20000, 'Мясо, тесто, помидоры', 'media/lavash/lavash_1.jpg'),
-        (1, 'Мини говяжий', 22000, 'Мясо, тесто, помидоры', 'media/lavash/lavash_2.jpg'),
-        (1, 'Мини с сыром', 24000, 'Мясо, тесто, помидоры', 'media/lavash/lavash_3.jpg')
+        (1, 'Лаваш с курицой', 23000, 'Куринное мясо, салат, соус, тесто, помидоры', 'media/lavash/_BBQ___.jpg'),
+        (1, 'Лаваш с говядиной', 28000, 'Говяжее мясо, тесто, помидоры, огурцы', 'media/lavash/i.webp'),
+        (1, 'Лаваш с сыром', 25000, 'Куринное мясо, тесто, помидоры, сыр', 'media/lavash/XXL.webp'),
+        (2, 'Донар с говдянной', 26000, 'Рванное мясо, овощи, буллочка', 'media/donar/i (1).webp'),
+        (2, 'Донар фирмерный', 30000, 'Рванное мясо, овощи, соус, буллочка', 'media/donar/i (2).webp'),
     )
     with Session(engine) as session:
         for category in categories:
@@ -148,11 +149,11 @@ def main():
             session.commit()
         for product in products:
             query = Products(
-                category_id=product[1],
-                product_name=product[2],
-                product_price= product[3],
-                description=product[4],
-                image=product[5]
+                category_id=product[0],
+                product_name=product[1],
+                product_price= product[2],
+                description=product[3],
+                image=product[4]
             )
             session.add(query)
             session.commit()

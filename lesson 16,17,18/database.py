@@ -231,7 +231,6 @@ def get_user_cart_id(chat_id):
     database.close()
     return cart_id
 
-
 def get_detail_product(product_name):
     database = sqlite3.connect('fastfood.db')
     cursor = database.cursor()
@@ -388,6 +387,7 @@ def delete_product_id(id):
     ''', (id,))
     database.commit()
     database.close()
+update_total_product_total_price
 
 # def create_language():
 #     database = sqlite3.connect('fastfood.db')
@@ -408,7 +408,7 @@ def delete_product_id(id):
 #     VALUES (?)
 #     ''', (lang,))
 #     database.commit()
-#     database.close()
+    # database.close()
 
 # def get_language():
 #     database = sqlite3.connect('fastfood.db')
