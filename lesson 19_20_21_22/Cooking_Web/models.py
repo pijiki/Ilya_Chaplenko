@@ -2,13 +2,20 @@ from django.db import models
 from django.urls import reverse
 
 class Category(models.Model):
-    title = models.CharField(max_length=160, unique=True, verbose_name='Название')
+    title = models.CharField(
+        max_length=160, 
+        unique=True,
+        verbose_name='Название'
+    )
 
     def __str__(self) -> str:
         return self.title
 
     def get_absolute_url(self):
-        return reverse('category_list', kwargs={'pk': self.pk})
+        return reverse(
+            'category_list',
+            kwargs={'pk': self.pk}
+        )
 
     class Meta:
         verbose_name = 'Категория'

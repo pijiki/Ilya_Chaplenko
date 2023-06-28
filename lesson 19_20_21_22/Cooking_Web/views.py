@@ -1,57 +1,80 @@
-from django.shortcuts import render, redirect
+from typing import Any
 from .forms import PostAddForm, LoginForm, RegisterForm
-from .models import Post
-from django.db.models import F
+from .models import Post, Category
+from .forms import PostAddForm, LoginForm
+
+from django.db.models import F, Q
 from django.contrib.auth import login, logout
 from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
+from django.contrib.auth.views import PasswordChangeView
 
 
+class Index(ListView):
+    """Вывод на главную страницу"""
 
-def index(request):
-    """Главная страница"""
-    posts = Post.objects.all()
-
-    context = {
-        'title': 'Главная страница',
-        'posts': posts
+    model = Post
+    context_object_name  = 'posts'
+    template_name = 'Cooking_web/index.html'
+    extra_context = { 
+        'title': 'Главная станица'
     }
-    return render(
-        request, 
-        'Cooking_Web/index.html', 
-        context
-    )
+    def get_queryset(self):
+        """Добавление фильтрации"""
+        return Post.objects.filter(
+            published=True
+        )
+    
+class ArticleByCategory(Index):
+    """Реакция на нажатие кнопки категорий"""
+    
+    def get_queryset(self):
+        """Добавление фильтрации"""
+        return Post.objects.filter(
+            category_id = self.kwargs['pk'],
+            published = True
+        )
+           
+    def get_context_data(self, *, objects_list=None, **kwargs):
+        """Для динамических данных"""
+        context = super().get_context_data()
+        category = Category.objects.get(
+            pk=self.kwargs['pk']
+        )
+        context['title'] = category.title
+        return context
 
-def category_list(request, pk):
-    """Реакция на нажатие кнопки"""
-    posts = Post.objects.filter(category_id=pk)
-
-    context = {
-        'title': posts[0].category.title if posts else 'Статей на данной категории не существует!',
-        'posts': posts
-    }
-    return render(
-        request, 
-        'Cooking_web/index.html', 
-        context
-    )
-
-def article_detail(request, pk):
+class PostDetail(DetailView):
     """Страница статьи"""
-    article = Post.objects.get(pk=pk)
-    Post.objects.filter(pk=pk).update(watched=F('watched') + 1)
-    recommendations = Post.objects.all().order_by('-watched')[:4]
+    model = Post
+    template_name = 'Cooking_web/article_detail.html'
 
-    context = {
-        'title': article.title,
-        'post': article,
-        'recommendations': recommendations
-     }
+    def get_queryset(self):
+        """Добавление фильтрации"""
+        return Post.objects.filter(
+            category_id = self.kwargs['pk']
+        )
+    
+    def get_context_data(self, **kwargs):
+        """Для динамических данных"""
+        context = super().get_context_data()
+    # art
+    # icle = Post.objects.get(pk=pk)
+    # Post.objects.filter(pk=pk).update(watched=F('watched') + 1)
+    # recommendations = Post.objects.all().order_by('-watched')[:4]
 
-    return render(
-        request, 
-        'Cooking_web/article_detail.html',
-        context
-    )
+    # context = {
+    #     'title': article.title,
+    #     'post': article,
+    #     'recommendations': recommendations
+    #  }
+
+    # return render(
+    #     request, 
+    #     'Cooking_web/article_detail.html',
+    #     context
+    # )
 
 def add_post(request):
     """Добавление статьи от юзера"""
