@@ -117,16 +117,14 @@ class History(Base):
 
     history_id: Mapped[int] = mapped_column(primary_key=True)
     telegram_id: Mapped[int] = mapped_column(ForeignKey('users.telegram_id'))
-    name: Mapped[str] = mapped_column(String, nullable=False)
-    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-    price: Mapped[DECIMAL] = mapped_column(DECIMAL,nullable=False)
+    text: Mapped[str] = mapped_column(String, nullable=False)
+
 
     def __str__(self):
         return f"Histories(history_id={self.history_id}, " \
                f"telegram_id={self.telegram_id}, " \
-               f"name={self.name}, " \
-               f"quantity={self.quantity}, " \
-               f"price={self.price}) "
+               f"text={self.text} " 
+
     
     def __repr__(self):
         return str(self)

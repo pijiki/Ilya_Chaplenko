@@ -15,7 +15,7 @@ def generate_main_menu():
     return ReplyKeyboardMarkup(
         [
             [KeyboardButton(text='✔️ Сделать заказ')],
-            [KeyboardButton(text='📒 История'), 
+            [KeyboardButton(text='📙 История'), 
              KeyboardButton(text='🛒 Корзинка'), 
              KeyboardButton(text='🛠️ Настройки')]
         ], resize_keyboard=True
@@ -106,8 +106,8 @@ def generate_setings_button():
     )
     builder.row(
         InlineKeyboardButton(
-            text="Админ панель",
-            url ="https://121.0.0.1.com",
+            text="Админ панель", # TODO Сделать админку
+            url = "",
             callback_data="admin_site"
         )
     )

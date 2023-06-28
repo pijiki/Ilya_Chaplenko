@@ -2,33 +2,40 @@ from liblary.config import *
 from liblary.keyboards import *
 from liblary.utils import *
 
+from aiogram.dispatcher import FSMContext
 from aiogram import Bot, Dispatcher, executor
-from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove, InputMedia, LabeledPrice
-                                                        
+from aiogram.types import Message, CallbackQuery, InputMedia, LabeledPrice
+import re                                           
+
 
 bot = Bot(TOKEN, parse_mode='HTML')
 dp = Dispatcher(bot)
 
+
 @dp.message_handler(commands=['start', 'help', 'about']) 
 async def command_start(message: Message):
     """Реакция бота на команды"""
-    if message.text == '/start':
-        await message.answer(
-            f'Добро пожаловать <b>{message.from_user.first_name}</b>.\n' \
-            'Вас приветствует бот доставки'
-            )    
-        await register_user(message)  
-    elif message.text == '/about':
-        await message.answer(
-            'Этот бот был создан для портфолио\n' \
-            'С использованием <b>SQLAlchemy, Python, Aiogram, Django</b>\n' \
-            'Ссылка на GitHub репозиторий') # TODO вставить ссылку гита
-    elif message.text == '/help':
-        await message.answer(
-            'Если у вас возникли ошибки или вопросы?\n'
-            f'Пишите к @neprostoilyaa'
-        )
 
+    text = message.text
+    match text:
+        case '/start':
+            await message.answer(
+                f'Добро пожаловать <b>{message.from_user.first_name}</b>.\n' \
+                'Вас приветствует бот доставки'
+                )    
+            await register_user(message)
+          
+        case  '/about':
+            await message.answer(
+                'Этот бот был создан для портфолио\n' \
+                'С использованием <b>SQLAlchemy, Python, Aiogram, Docker</b>\n' \
+                'Ссылка на GitHub репозиторий') # TODO вставить ссылку гита
+            
+        case '/help':
+            await message.answer(
+                'Если у вас возникли ошибки или вопросы?\n'
+                f'Пишите к @neprostoilyaa'
+            )
 
 async def register_user(message: Message):
     """Проверка юзера на существования акаунта"""
@@ -232,7 +239,7 @@ async def put_into_cart(call: CallbackQuery):
         )
         await make_order(call.message)
 
-def do_not_repeat_yourself(chat_id, text):
+def dont_repeat_yourself(chat_id, text):
     """Вывод товаров в корзине"""
     cart_products = db_get_cart_products(chat_id)
     if cart_products:
@@ -254,9 +261,9 @@ def do_not_repeat_yourself(chat_id, text):
 async def show_finally_cart(call: CallbackQuery):
     """Показ корзины юзера"""
     chat_id = call.from_user.id
-    products = do_not_repeat_yourself(chat_id, 'Ваша корзина')
+    products = dont_repeat_yourself(chat_id, 'Ваша корзина')
     if products:
-        _, text, *_ = do_not_repeat_yourself(chat_id, 'Ваша корзина')
+        _, text, *_ = dont_repeat_yourself(chat_id, 'Ваша корзина')
         await bot.send_message(
             chat_id=chat_id,
             text=text,
@@ -292,7 +299,7 @@ async def create_order(call: CallbackQuery):
         message_id=message_id
     )
 
-    _, text, price, _ = do_not_repeat_yourself(chat_id, 'Итоговый список для оплаты')
+    _, text, price, _ = dont_repeat_yourself(chat_id, 'Итоговый список для оплаты')
     text += "\nДоставка по городу: 10000"
     await bot.send_invoice(
         chat_id=chat_id,
@@ -312,29 +319,30 @@ async def create_order(call: CallbackQuery):
             )
         ]
     )
-    await bot.answer_callback_query(call.id, 'Оплачено')
+    await bot.answer_callback_query(call.id, 'Оплачено!')
     await show_main_menu(call.message)
 
     chat_id = call.message.chat.id
     nickname = call.from_user.username
     phone = db_get_phone_user(chat_id)
-
-    _, text, price, cart_id = do_not_repeat_yourself(chat_id, 'Заказ')
+    _, text, price, cart_id = dont_repeat_yourself(chat_id, 'Заказ')
     text += f'Ник: @{nickname}\n'
     text += f'Контакт: +{phone}'
     await bot.send_message(
         chat_id=MANAGER,
         text=text
     )
+    _, order, _, _ = dont_repeat_yourself(chat_id, 'Последний заказ')
+    db_insert_history_products(order, chat_id)
     db_clear_finally_cart(cart_id)
 
 @dp.message_handler(lambda message: '🛒 Корзинка' in message.text)
 async def chow_cart_in_menu(message: Message):
     """Показ корзинки в меню"""
     chat_id = message.from_user.id
-    products = do_not_repeat_yourself(chat_id, 'Ваша корзина')
+    products = dont_repeat_yourself(chat_id, 'Ваша корзина')
     if products:
-        _, text, *_ = do_not_repeat_yourself(chat_id, 'Ваша корзина')
+        _, text, *_ = dont_repeat_yourself(chat_id, 'Ваша корзина')
         await bot.send_message(
             chat_id=chat_id,
             text=text,
@@ -356,10 +364,45 @@ async def show_setings_button(message: Message):
 
 @dp.callback_query_handler(lambda call: 'change_phone' in call.data)
 async def change_phone(call: CallbackQuery):
+    """Инмтрукция по смене номера"""
     chat_id = call.from_user.id
-    await bot.edit_message_text(
-        message_id=call.message.message_id,
+    message_id = call.message.message_id
+    await bot.delete_message(
         chat_id=chat_id,
-        text='Введите новый номер\nПример: +999899999'
+        message_id=message_id   
     )
+    await bot.send_message(
+        chat_id=chat_id,
+        reply_markup=back_to_main_menu(),
+        text='Для смены номера введите команду /change\n' \
+            'Пример: /change +998999999999'
+    )
+
+@dp.message_handler(regexp=r'/change')
+async def change_phone(message: Message):
+    """Смена номера"""
+    chat_id = message.from_user.id
+    text = message.text.split()[1]
+    phone = re.findall('\d+', text)[0]
+    db_change_phone(chat_id, phone)
+
+    message_id = message.message_id
+    await bot.delete_message(
+        chat_id=chat_id,
+        message_id=message_id   
+    )
+    await bot.send_message(
+        chat_id=chat_id,
+        text="Номер был успешно изменен!"
+    )
+    await show_main_menu(message)
+
+@dp.message_handler(lambda message: '📙 История' in message.text)
+async def history(message: Message):
+    chat_id = message.from_user.id
+    text = db_get_history_products(chat_id)[0][0]
+    await message.answer(
+        text=text
+    )
+
 executor.start_polling(dp)

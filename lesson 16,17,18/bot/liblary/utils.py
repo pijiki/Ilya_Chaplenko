@@ -207,14 +207,12 @@ def db_delete_product(finally_id: int) -> None:
     db_session.execute(query)
     db_session.commit()
 
-def db_insert_history_products(name: str, quantity: int,
-        price: DECIMAL):
+def db_insert_history_products(text: str, telegram_id: int):
     """Добавление истории покупки"""
     query = insert(History
     ).values(
-        name = name, 
-        quantity = quantity,
-        price = price
+        telegram_id = telegram_id,
+        text = text
     )
     db_session.execute(query)
     db_session.commit()
@@ -222,11 +220,13 @@ def db_insert_history_products(name: str, quantity: int,
 def db_get_history_products(telegram_id: int) -> Iterable:
     """Получение истории покупок"""
     query = select(
-        History.name,
-        History.quantity,
-        History.price
+        History.text
     ).filter(
         History.telegram_id == telegram_id
+    ).order_by(
+        History.history_id.desc()
+    ).limit(
+        1
     )
     return db_session.execute(query).fetchall()
 
