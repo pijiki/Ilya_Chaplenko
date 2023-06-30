@@ -1,6 +1,6 @@
-from liblary.config import *
-from liblary.keyboards import *
-from liblary.utils import *
+from config import *
+from keyboards import *
+from utils import *
 
 from aiogram.dispatcher import FSMContext
 from aiogram import Bot, Dispatcher, executor
