@@ -5,9 +5,11 @@
             <div class="d-flex justify-content-between"><div class="col-8">
                 <div class="card"><div class="card-header d-flex justify-content-between">{{ post.category.title }}
                     <div>
-                        <a href="#!" class="btn btn-dark">Удалить</a>
-                        <a href="#!" class="btn btn-dark">Изменить</a>
-                        <a href="{% url 'index' %}" class="btn btn-dark">Назад</a>
+                        {% if request.user == post.author %}
+                        <a href="{% url 'post_delete' post.pk %}" class="btn btn-dark">Удалить</a>
+                        <a href="{% url 'post_update' post.pk %}" class="btn btn-dark">Изменить</a>
+                        {% endif %}
+                        <a href="{% url 'category_list' post.category.pk %}" class="btn btn-dark">Назад</a>
                     </div>
                 </div>
                     <img src="" class="card-img-top" alt=""><div class="card-body">
@@ -21,28 +23,30 @@
 
                 </div>
                     <div class="card-footer d-flex justify-content-between"><p class="card-text">{{ post.created_at  }}</p>
-                        <a href="/profile/1">Автор статьи: Какой то человек</a>
+                        <a href="{% url 'profile' post.author.pk %}">Автор статьи: {{ post.author }}</a>
                         <p class="card-text">{{ post.watched }}</p>
                     </div>
                 </div>
                 <hr>
 
                 <!--  reviews-->
-                <form action="#!" method="post" , enctype="multipart/form-data">
-                    <input type="hidden" name="csrfmiddlewaretoken" value="dVpvJs374bq08P5ZzKsB7pSNUnoJ6PXRIDRXHc1fjvFIdKmbXrQMDMR0wYHLFtut">
-                    <textarea name="text" cols="40" rows="10" class="form-control" placeholder="Текст вашего комментария" required id="id_text"></textarea>
+                {% if request.user.is_authenticated %}
+                <form action="{% url 'add_comment' post.pk %}" method="post", enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% include 'components/_form_error.html' %}
+                    {{ comment_form.text }}
                     <button class="btn btn-dark" type="submit">Добавить комментарий</button>
                 </form>
+                {% endif %}
 
-                <div class="card mt-2"><h5 class="card-header">Какой то человек</h5>
+                {% for comment in comments %}
+                <div class="card mt-2"><h5 class="card-header">{{ comment.user.username }}</h5>
                     <div class="card-body">
-                        <p class="card-text">Текст отзыва</p>
+                        <p class="card-text">{{ comment.text }}</p>
                     </div>
                 </div>
-            </div>
-            <!--  Recommendation-->
-            <div class="col-1"></div>
-            <div class="col-4">
+                {% endfor %}
+                
                 {% for recom in recommendations %}
                 <div class="card" style="width: 18rem;">
                     {% if recom.photo %}
@@ -54,7 +58,5 @@
                                                                                            class="btn btn-primary">Подробнее</a></div>
                 </div>
                 {% endfor %}
-            </div>
-            </div>
         </main>
 {% endblock main %}

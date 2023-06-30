@@ -8,32 +8,32 @@
          <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item"><a class="nav-link active" aria-current="page" href="{% url 'index' %}">Главная</a></li></ul>
                             <div class="d-flex">
-                                <form class="d-flex" role="search" method="get" action="#!">
-                                    <input name="q" class="form-control me-2" type="search" placeholder="Поиск" aria-label="Поиск">
+                                <form class="d-flex" role="search" method="get" action="{% url 'search_result' %}">
+                                    <input name="text" class="form-control me-2" type="search" placeholder="Поиск" aria-label="Поиск">
                                     <button class="btn btn-outline-success" type="submit">Поиск</button>
                                 </form>
                                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                                     <!--  Users-->
                                     {% if not request.user.is_authenticated %}
-                                    <li class="nav-item">
-                                        <a href="{% url 'login' %}" class="nav-link active" aria-current="page">Войти</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{% url 'register' %}" class="nav-link active" aria-current="page">Зарегистрироваться</a>
-                                    </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'login' %}" class="nav-link active" aria-current="page">Войти</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'register' %}" class="nav-link active" aria-current="page">Зарегистрироваться</a>
+                                        </li>
                                     {% else %}
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                                           data-bs-toggle="dropdown" aria-expanded="false">
-                                            Здравствуйте {{ request.user.username }}
-                                        </a>
-                                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                            <li><a class="dropdown-item" href="#!">Моя страница</a></li>
-                                            <li><a class="dropdown-item" href="{% url 'add' %}">Добавить статью</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item" href="{% url 'logout' %}">Выход</a></li>
-                                        </ul>
-                                    </li>
+                                        <li class="nav-item dropdown">
+                                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                                Здравствуйте {{ request.user.username }}
+                                            </a>
+                                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                                <li><a class="dropdown-item" href="{% url 'profile' request.user.pk %}">Моя страница</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'add' %}">Добавить статью</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" href="{% url 'logout' %}">Выход</a></li>
+                                            </ul>
+                                        </li>
                                     {% endif %}
                                 </ul>
                             </div>

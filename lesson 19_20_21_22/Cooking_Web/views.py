@@ -1,12 +1,13 @@
-from typing import Any
-from .forms import PostAddForm, LoginForm, RegisterForm
-from .models import Post, Category
-from .forms import PostAddForm, LoginForm
+from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 
+from .models import Post, Category, Comment
 from django.db.models import F, Q
+from .forms import PostAddForm, LoginForm, RegisterForm, CommentForm
 from django.contrib.auth import login, logout
 from django.contrib import messages
-from django.shortcuts import render, redirect
+
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
 from django.contrib.auth.views import PasswordChangeView
 
@@ -53,49 +54,68 @@ class PostDetail(DetailView):
     def get_queryset(self):
         """Добавление фильтрации"""
         return Post.objects.filter(
-            category_id = self.kwargs['pk']
+            pk=self.kwargs['pk']
         )
-    
+
     def get_context_data(self, **kwargs):
         """Для динамических данных"""
-        context = super().get_context_data()
-    # art
-    # icle = Post.objects.get(pk=pk)
-    # Post.objects.filter(pk=pk).update(watched=F('watched') + 1)
-    # recommendations = Post.objects.all().order_by('-watched')[:4]
+        Post.objects.filter(
+            pk=self.kwargs['pk']
+        ).update(
+            watched=F('watched') + 1
+        )
+        context = super().get_context_data()  
+        post = Post.objects.get(
+            pk=self.kwargs['pk']
+        )
+        context['title'] = post.title
+        context['comments'] = Comment.objects.filter(post=post)
+        if self.request.user.is_authenticated:
+            context['comment_form'] = CommentForm
 
-    # context = {
-    #     'title': article.title,
-    #     'post': article,
-    #     'recommendations': recommendations
-    #  }
+        return context
 
-    # return render(
-    #     request, 
-    #     'Cooking_web/article_detail.html',
-    #     context
-    # )
 
-def add_post(request):
-    """Добавление статьи от юзера"""
-    if request.method == 'POST':
-        form = PostAddForm(request.POST, request.FILES)
-        if form.is_valid():
-            post = Post.objects.create(**form.cleaned_data)
-            post.save()
-            return redirect('article_detail', post.pk)
-    else:
-        form = PostAddForm()
+class PostUpdate(UpdateView): 
+    """Кнопка изменения"""
+    model = Post
+    form_class = PostAddForm
+    template_name = 'Cooking_web/article_add_form.html'
+
+class PostDelete(DeleteView):
+    """Кнопка удаления"""
+    model = Post
+    success_url = reverse_lazy('index')
+    context_object_name = 'post'
+
+class SearchResult(Index):
+    """Кнопка поиска статей"""
+
+    def get_queryset(self):
+        """Добавление фильтрации"""
+        title = self.request.GET.get('text') 
+        posts = Post.objects.filter(
+            Q(title__icontains=title) | Q(content__icontains=title)
+        )
+        return posts
     
-    context = {
-        'form': form,
-        'title': "Добавить статью"
-    }
-    return render(
-        request, 
-        'Cooking_web/article_add_form.html', 
-        context
-    )
+def add_comment(request, post_id):
+    """Добавление коментариев"""
+    form = CommentForm(data=request.POST) 
+    if form.is_valid():
+        comment = form.save(commit=False)  
+        comment.user = request.user 
+        post = Post.objects.get(pk=post_id)
+        comment.post = post  
+        comment.save()  
+        messages.success(
+            request, 
+            message='Ваш комментарий успешно добавлен'
+        )
+    else:
+        pass
+
+    return redirect('article_detail', post_id)
 
 def user_login(request):
     """Аутендификация юзера"""
@@ -116,6 +136,17 @@ def user_login(request):
 
     return render(request, 'Cooking_web/login_form.html', context)
 
+class AddPost(CreateView):
+    """Добавление статьи от юзера"""
+    form_class = PostAddForm
+    template_name = 'Cooking_Web/article_add_form.html'
+    extra_context = {
+        'title': 'Добавить статью'
+    }
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
 
 def user_logout(request):
     """Выход пользователя"""
@@ -138,3 +169,24 @@ def register(request):
         'form': form
     }
     return render(request, 'Cooking_web/register.html', context)
+
+
+def profile(request, user_id):
+    """Профиль пользователя"""
+    user = User.objects.get(
+        pk=user_id
+    )
+    posts = Post.objects.filter(
+        author=user
+    )
+    context = {
+        'user': user,
+        'posts': posts
+    }
+
+    return render(request, 'Cooking_Web/profile.html', context)
+
+class ChangePassword(PasswordChangeView):
+    """Cмена пароля"""
+    template_name = 'Cooking_Web/password_change_form.html'
+    success_url = reverse_lazy('index')
