@@ -30,7 +30,16 @@ class Category(models.Model):
         related_name='subcategories'
     )
     def get_absolute_url(self):
-        pass
+        """Ссылка на страницу категорий"""
+        return reverse('category_detail', kwargs={'slug': self.slug })
+
+    def get_parent_category_photo(self):
+        """Для получения картинки родительских категорий"""
+        if self.image:
+            return self.image.url
+        else:
+            return 'https://itaros.ru/upload/iblock/81b/lyrg5fswe4xqjb5i4pjmy2ojl0vjnv1o/a80973cf_2379_11eb_8dca_005056000e85_f2197ea0_3318_11ec_9700_20106a300d87.jpg'
+
 
     def __str__(self):
         """Строковое представление"""
@@ -107,6 +116,12 @@ class Product(models.Model):
 
     def get_absolute_url(self):
         pass
+
+    def get_first_photo(self):
+        if self.images.first():
+            return self.images.first().image.url
+        else:
+            return 'https://itaros.ru/upload/iblock/81b/lyrg5fswe4xqjb5i4pjmy2ojl0vjnv1o/a80973cf_2379_11eb_8dca_005056000e85_f2197ea0_3318_11ec_9700_20106a300d87.jpg'
 
     def __str__(self):
         """Строковое представление"""
