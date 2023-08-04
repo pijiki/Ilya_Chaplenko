@@ -115,7 +115,8 @@ class Product(models.Model):
     )
 
     def get_absolute_url(self):
-        pass
+        """Ссылка на страницу категорий"""
+        return reverse('product_page', kwargs={'slug': self.slug })
 
     def get_first_photo(self):
         if self.images.first():
@@ -154,3 +155,36 @@ class Gallery(models.Model):
         """Характер Класса"""
         verbose_name = 'Изображение'
         verbose_name_plural = 'Галерея товаров'
+
+class Review(models.Model):
+    """Отзывы товаров"""
+
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE, 
+        verbose_name='Автор'
+    )
+
+    text = models.TextField(
+        verbose_name='Текст отзыва'
+    )
+
+    product = models.ForeignKey(
+        Product, 
+        on_delete=models.CASCADE, 
+        verbose_name='Товар'
+    )
+
+    created_at = models.DateField(
+        auto_now=True, 
+        verbose_name='Дата'
+    )
+
+    def __str__(self) -> str:
+        """Строковое представление"""
+        return self.author.username
+    
+    class Meta:
+        """Характер Класса"""
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'

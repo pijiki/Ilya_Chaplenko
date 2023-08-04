@@ -4,11 +4,12 @@ from .models import Category, Product, Gallery
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from .models import Product, Category, Gallery
+from .models import Product, Category, Gallery, Review
 
 
 admin.site.register(Gallery)
 class GalleryInline(admin.TabularInline):
+    """Галерея товаров"""
     fk_name = 'product'
     model = Gallery
     extra = 1
@@ -52,3 +53,8 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    """Отзывы"""
+    list_display = ('pk', 'author', 'created_at')
+    readonly_fields = ('author', 'text', 'created_at')
