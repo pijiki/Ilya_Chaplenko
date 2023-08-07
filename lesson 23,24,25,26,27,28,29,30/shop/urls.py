@@ -10,5 +10,9 @@ urlpatterns = [
     path('login', user_login, name='login'),
     path('logout', user_logout, name='logout'),
     path('register', register, name='register'),
-    path('save_review/<int:product_id>/', save_review, name='save_review'),
+    path('save_review/<int:product_id>', save_review, name='save_review'),
+    path('add-favorite/<slug:product_slug>/', save_favorite_product, name='add_favorite'),
+    path('my_favorite/', FavoriteProductsView.as_view(), name='favorite_products'),
+    path('save_mail/', save_mail, name='save_mail'),
+    path('send_mail/', send_mail_to_customers, name='send_mail'),
 ]

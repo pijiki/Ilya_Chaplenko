@@ -41,19 +41,22 @@ class RegistrationForm(UserCreationForm):
                 'class': 'form-control',
                 'placeholder': 'Почта'
             })
-
-
         }
+
 
 class ReviewForm(forms.ModelForm):
     """Отзывы"""
 
     class Meta:
         model = Review
-        fields = ('text',)
+        fields = ('text','grade')
         widgets = {
             'text': forms.Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ваш отзыв...'
+                'placeholder': 'Ваш отзыв..'
+            }),
+            'grade': forms.Select(attrs={
+                'class': 'form-control',
+                'placeholder': 'Оценка'
             })
         }

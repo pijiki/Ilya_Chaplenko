@@ -20,14 +20,14 @@
             <!-- DETAILS TABS-->
                 {% include 'shop/components/_product_description_tables.html' %}
             <!-- RELATED PRODUCTS-->
-            <h2 class="h5 text-uppercase mb-4">Вам также может понравяться</h2>
+            <h2 class="h5 text-uppercase mb-4">Вам также может понравиться</h2>
             <div class="row">
                 <!-- PRODUCT-->
-            <div class="col-lg-3 col-sm-6">
-                {% for product in products %}
-                    {% include 'shop/components/_product_cart.html' %}        
-                {% endfor %}
-            </div>
+                <div class="col-lg-3 col-sm-6">
+                    {% for product in products %}
+                        {% include 'shop/components/_product_cart.html' %}        
+                    {% endfor %}
+                </div>
             </div>
         </div>
       </section>

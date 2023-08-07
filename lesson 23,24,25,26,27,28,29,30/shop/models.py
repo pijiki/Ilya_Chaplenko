@@ -51,7 +51,7 @@ class Category(models.Model):
 
     class Meta:
         """Характер Класса"""
-        verbose_name = 'Категория'
+        verbose_name = 'Категорию'
         verbose_name_plural = 'Категории'
 
 class Product(models.Model):
@@ -156,8 +156,25 @@ class Gallery(models.Model):
         verbose_name = 'Изображение'
         verbose_name_plural = 'Галерея товаров'
 
+
+DEFAULT_CHOICES = (
+    ('5', 'Отлично'),
+    ('4', 'Хорошо'),
+    ('3', 'Нормально'),
+    ('2', 'Плохо'),
+    ('1', 'Ужасно'),
+)
+
 class Review(models.Model):
     """Отзывы товаров"""
+
+    grade = models.CharField(
+        max_length=20, 
+        choices=DEFAULT_CHOICES, 
+        blank=True, 
+        null=True, 
+        verbose_name='Оценка'
+    )
 
     author = models.ForeignKey(
         User,
@@ -188,3 +205,48 @@ class Review(models.Model):
         """Характер Класса"""
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+
+class FavoriteProducts(models.Model):
+    """Избранные товары"""
+
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        verbose_name='Пользователь'
+    )
+
+    product = models.ForeignKey(
+        Product, 
+        on_delete=models.CASCADE, 
+        verbose_name="Избранные товары"
+    )
+
+    def __str__(self) -> str:
+        """Строковое представление"""
+        return self.product.title
+    
+    class Meta:
+        """Характер Класса"""
+        verbose_name = 'Избранные товар'
+        verbose_name_plural = 'Избранные товары'
+
+class Mail(models.Model):
+    """Почтовые адреса"""
+    mail = models.EmailField(
+        unique=True
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+
+    def __str__(self) -> str:
+        """Строковое представление"""
+        return self.mail
+    
+    class Meta:
+        """Характер Класса"""
+        verbose_name = 'Почту'
+        verbose_name_plural = 'Почтовые адреса'

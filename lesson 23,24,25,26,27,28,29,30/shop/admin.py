@@ -1,10 +1,9 @@
 from django.contrib import admin
-from .models import Category, Product, Gallery
+from .models import Product, Category, Gallery, Review, Mail, FavoriteProducts
 
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from .models import Product, Category, Gallery, Review
 
 
 admin.site.register(Gallery)
@@ -51,10 +50,23 @@ class ProductAdmin(admin.ModelAdmin):
 
     get_photo.short_description = 'Миниатюра'
 
-
-
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
     """Отзывы"""
     list_display = ('pk', 'author', 'created_at')
     readonly_fields = ('author', 'text', 'created_at')
+    
+@admin.register(Mail)
+class ReviewEmail(admin.ModelAdmin):
+    """Почтовые адреса"""
+    list_display = ('pk', 'mail', 'user')
+    readonly_fields = ('mail', 'user')
+    list_filter = ('user',)
+
+@admin.register(FavoriteProducts)
+class ReviewFavorite(admin.ModelAdmin):
+    """Избранные товары"""
+    list_display = ('user', 'product')
+    readonly_fields = ('user', 'product')
+    list_filter = ('product',)
+    

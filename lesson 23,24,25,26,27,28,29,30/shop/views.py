@@ -2,8 +2,8 @@ from random import randint
 from typing import Any, Dict
 
 from .forms import LoginForm, RegistrationForm, ReviewForm
-from .models import Category, Product, Review
-
+from .models import Category, Product, Review, FavoriteProducts, Mail
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.views.generic import DetailView, ListView
@@ -119,6 +119,7 @@ def login_authentication(request):
 
 
 def user_login(request):
+    """Вход в аккаунт"""
     form = LoginForm(data=request.POST)
     if form.is_valid():
         user = form.get_user()
@@ -128,13 +129,13 @@ def user_login(request):
         messages.error(request, 'Не верное имя пользователя или пароль')
         return redirect('login_authentication')
 
-
 def user_logout(request):
+    """Выход из аккаунта"""
     logout(request)
     return redirect('index')
 
-
 def register(request):
+    """Регистрация аккаунта"""
     form = RegistrationForm(data=request.POST)
     if form.is_valid():
         print(form)
@@ -148,8 +149,7 @@ def register(request):
     return redirect('login_registration')
 
 def save_review(request, product_id):
-    """Cохранения отзывов"""
-
+    """Cохранения отзыва"""
     form = ReviewForm(data=request.POST)
     if form.is_valid():
         review = form.save(commit=False)
@@ -158,3 +158,60 @@ def save_review(request, product_id):
         review.product = product
         review.save()
         return redirect('product_page', product.slug)
+
+def save_favorite_product(request, product_slug):
+    """Удаление или добавление избранных товаров"""
+    user = request.user if request.user.is_authenticated else None
+    product = Product.objects.get(slug=product_slug)
+    favorite_products = FavoriteProducts.objects.filter(user=user)
+    if user:
+        if product in [i.product for i in favorite_products]:
+            fav_product = FavoriteProducts.objects.get(user=user, product=product)
+            fav_product.delete()
+        else:
+            FavoriteProducts.objects.create(user=user, product=product)
+    next_page = request.META.get('HTTP_REFERER', 'products_list')
+    return redirect(next_page)
+
+class FavoriteProductsView(LoginRequiredMixin, ListView):
+    """Вывод избранных товаров на страничку"""
+    model = FavoriteProducts
+    context_object_name = 'products'
+    template_name = 'shop/favorite_products.html'
+    login_url = 'login_registration'
+
+    def get_queryset(self):
+        """Получаем товары конкретного пользователя"""
+        user = self.request.user
+        favorite_products = FavoriteProducts.objects.filter(
+            user=user
+        )
+        products = [_.product for _ in favorite_products]
+        return products
+
+def save_mail(request):
+    """Собиратель почтовых адресов"""
+    email = request.POST.get('email')
+    user = request.user if request.user.is_authenticated else None
+    if email:
+        try:
+            Mail.objects.create(mail=email, user=user)
+        except:
+            pass
+    return redirect('index')
+
+def send_mail_to_customers(request):
+    """Рассылка писем"""
+    from conf import settings
+    from django.core.mail import send_mail
+    if request.method == 'POST':
+        text = request.POST.get('text')
+        mail_list = Mail.objects.all()
+        for email in mail_list:
+            mail = send_mail(subject='Test',
+                             message=text,
+                             from_email=settings.EMAIL_HOST_USER,
+                             recipient_list=[email],
+                             fail_silently=False)
+    context = {'title': 'Спаммер'}
+    return render(request, 'shop/send_mail.html', context)
