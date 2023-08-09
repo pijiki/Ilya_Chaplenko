@@ -1,12 +1,12 @@
 from django.contrib import admin
-from .models import Product, Category, Gallery, Review, Mail, FavoriteProducts
+from .models import Product, Category, Gallery, Review, Mail, FavoriteProducts, \
+                    Order, OrderProduct, ShippingAddress, Customer
 
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
 
 
-admin.site.register(Gallery)
 class GalleryInline(admin.TabularInline):
     """Галерея товаров"""
     fk_name = 'product'
@@ -69,4 +69,9 @@ class ReviewFavorite(admin.ModelAdmin):
     list_display = ('user', 'product')
     readonly_fields = ('user', 'product')
     list_filter = ('product',)
-    
+
+admin.site.register(Customer)
+admin.site.register(Order)
+admin.site.register(OrderProduct)
+admin.site.register(ShippingAddress)
+admin.site.register(Gallery)

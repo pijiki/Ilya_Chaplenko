@@ -48,6 +48,7 @@
                 {% include 'shop/components/_product_cart.html' %}
                 </div>
                 {% endfor %}
+                {% include 'shop/components/_pagination.html' %}
                 {% else %}
                 <div class="div-title">
                     <img src="https://uzum.uz/static/img/hearts.cf414be.png" class="image-title">
@@ -59,20 +60,9 @@
                         Нажмите на ♡ в товаре. Войдите в аккаунт и всё избранное сохранится
                     </p>
                 </div>
-                <div><div style="margin-top: 250px;"></div></div>
+                <div><div style="margin-top: 100px;"></div></div>
                 {% endif %}
-
               </div>
-              <!-- PAGINATION-->
-              <nav aria-label="Page navigation example">
-                <ul class="pagination justify-content-center justify-content-lg-end">
-                  <li class="page-item mx-1"><a class="page-link" href="#!" aria-label="Previous"><span aria-hidden="true">«</span></a></li>
-                  <li class="page-item mx-1 active"><a class="page-link" href="#!">1</a></li>
-                  <li class="page-item mx-1"><a class="page-link" href="#!">2</a></li>
-                  <li class="page-item mx-1"><a class="page-link" href="#!">3</a></li>
-                  <li class="page-item ms-1"><a class="page-link" href="#!" aria-label="Next"><span aria-hidden="true">»</span></a></li>
-                </ul>
-              </nav>
             </div>
           </div>
         </div>

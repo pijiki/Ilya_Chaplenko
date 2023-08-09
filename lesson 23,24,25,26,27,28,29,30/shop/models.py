@@ -9,18 +9,15 @@ class Category(models.Model):
         max_length=150, 
         verbose_name='Название категории'
     )
-
     image = models.ImageField(
         upload_to='categories/', 
         null=True, blank=True, 
         verbose_name='Изображение'
     )
-
     slug = models.SlugField(
         unique=True, 
         null=True
     )
-
     parent = models.ForeignKey(
         'self',
         on_delete=models.CASCADE,
@@ -56,58 +53,47 @@ class Category(models.Model):
 
 class Product(models.Model):
     """Товары"""
-
     title = models.CharField(
         max_length=255, 
         verbose_name='Название товара'
     )
-
     price = models.FloatField(
         verbose_name='Цена'
     )
-
     created_at = models.DateTimeField(
         auto_now_add=True, 
         verbose_name='Дата создания'
     )
-
     watched = models.IntegerField(
         default=0, 
         verbose_name='Просмотры'
     )
-
     quantity = models.IntegerField(
         default=0, 
         verbose_name='Количество на складе'
     )
-
     description = models.TextField(
         default='Здесь скоро будет описание', 
         verbose_name='Описание товара'
     )
-
     info = models.TextField(
         default='Дополнительная информация о продукте', 
         verbose_name='Информация о товаре'
     )
-
     category = models.ForeignKey(
         Category, 
         on_delete=models.CASCADE, 
         verbose_name='Категория', 
         related_name='products'
     )
-
     slug = models.SlugField(
         unique=True, 
         null=True
     )
-
     size = models.IntegerField(
         default=30, 
         verbose_name='Размер в мм'
     )
-
     color = models.CharField(
         max_length=30, 
         default='Серебро', 
@@ -144,7 +130,6 @@ class Gallery(models.Model):
         upload_to='products/', 
         verbose_name='Изображение'
     )
-
     product = models.ForeignKey(
         Product, 
         on_delete=models.CASCADE, 
@@ -167,7 +152,6 @@ DEFAULT_CHOICES = (
 
 class Review(models.Model):
     """Отзывы товаров"""
-
     grade = models.CharField(
         max_length=20, 
         choices=DEFAULT_CHOICES, 
@@ -175,23 +159,19 @@ class Review(models.Model):
         null=True, 
         verbose_name='Оценка'
     )
-
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE, 
         verbose_name='Автор'
     )
-
     text = models.TextField(
         verbose_name='Текст отзыва'
     )
-
     product = models.ForeignKey(
         Product, 
         on_delete=models.CASCADE, 
         verbose_name='Товар'
     )
-
     created_at = models.DateField(
         auto_now=True, 
         verbose_name='Дата'
@@ -208,13 +188,11 @@ class Review(models.Model):
 
 class FavoriteProducts(models.Model):
     """Избранные товары"""
-
     user = models.ForeignKey(
         User, 
         on_delete=models.CASCADE, 
         verbose_name='Пользователь'
     )
-
     product = models.ForeignKey(
         Product, 
         on_delete=models.CASCADE, 
@@ -250,3 +228,154 @@ class Mail(models.Model):
         """Характер Класса"""
         verbose_name = 'Почту'
         verbose_name_plural = 'Почтовые адреса'
+
+class Customer(models.Model):
+    """Контактная информация заказчика"""
+    user = models.OneToOneField(
+        User, 
+        models.SET_NULL, 
+        null=True,
+        blank=True,
+        verbose_name='Пользователь'
+    )
+    first_name = models.CharField(
+        max_length=255,
+        verbose_name='Имя'
+    )
+    last_name = models.CharField(
+        max_length=255,
+        verbose_name='Фамилия'
+    )
+    email = models.EmailField(
+        verbose_name='Почтовый адрес'
+    )
+    phone = models.CharField(
+        max_length=30,
+        verbose_name='Телефоный Номер'
+    )
+
+    def __str__(self) -> str:
+        """Строковое представление"""
+        return self.first_name
+    
+    class Meta:
+        """Характер Класса"""
+        verbose_name = 'Покупатель'
+        verbose_name_plural = 'Покупатели'
+
+class Order(models.Model):
+    """Корзинка"""
+    custumer = models.ForeignKey(
+        Customer,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name='Покупатель'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата'
+    )
+    is_completed = models.BooleanField(
+        default=False,
+        verbose_name='Статус'
+    )
+    shiping = models.BooleanField(
+        default=False,
+        verbose_name='Доставка'
+    )
+
+    def __str__(self) -> str:
+        """Строковое представление"""
+        return str(self.pk)
+    
+    class Meta:
+        """Характер Класса"""
+        verbose_name = 'Заказ'
+        verbose_name_plural = 'Заказы'
+
+    @property # используется для создания <<специальной>> функциональности определеным методам
+    def get_cart_total_price(self):
+        """Для получения суммы товаров с корзины"""
+        order_products = self.ordered.all()
+        total_price = sum(
+            [product.get_total_price for product in order_products]
+        )
+        return total_price
+    
+    @property # используется для создания <<специальной>> функциональности определеным методам
+    def get_cart_total_quantity(self):
+        """Для получения колличевства товаров с корзины"""
+        order_products = self.ordered.all()
+        total_quantity = sum(
+            [product.quantity for product in order_products]
+        )
+        return total_quantity
+        
+class OrderProduct(models.Model):
+    """Привязка продукта к козрине (много ко многим)"""
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='ordered'
+    )
+    quantity = models.IntegerField(
+        default=0,
+        null=True,
+        blank=True
+    )
+    added_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        """Характер Класса"""
+        verbose_name = 'Товар в заказе'
+        verbose_name_plural = 'Товары в заказах'
+
+    @property # используется для создания <<специальной>> функциональности определеным методам
+    def get_total_price(self):
+        """Подсчитывает свою общую цену всех товаров"""
+        total_price = self.product.price * self.quantity
+        return total_price
+    
+
+class ShippingAddress(models.Model):
+    """Адреса доставки"""
+    customer = models.ForeignKey(
+        Customer, 
+        on_delete=models.SET_NULL, 
+        null=True
+    )
+    order = models.ForeignKey(
+        Order, 
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    city = models.CharField(
+        max_length=255
+    )   
+    state = models.CharField(
+        max_length=255
+    )   
+    street = models.CharField(
+        max_length=255
+    )  
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        """Строковое представление"""
+        return self.street
+
+    class Meta:
+        """Характер Класса"""
+        verbose_name = 'Адрес доставки'
+        verbose_name_plural = 'Адреса доставки'

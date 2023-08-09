@@ -2,7 +2,7 @@
 <div class="product text-center">
   <div class="mb-3 position-relative">
     <div class="badge text-white bg-"></div><a class="d-block" href="{{ product.get_absolute_url }}">
-      <img class="img-fluid w-100" src="{{ product.get_first_photo }}" alt="..."></a>
+      <img class="img-fluid w-100" src="{{ product.get_first_photo }}"></a>
     <div class="product-overlay">
       <ul class="mb-0 list-inline">
           {% if request.user.is_authenticated %}
@@ -10,11 +10,11 @@
           {% endif %}
 
           {% if product in fav_products and request.user.is_authenticated %}
-             <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-outline-dark" href="{% url 'add_favorite' product.slug %}"><i class="fas fa-heart" style="color:black"></i></a></li>
+             <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-outline-dark" href="{% url 'add_favorite' product.slug %}"><i class="fas fa-heart" style="color:rgb(234, 0, 94)"></i></a></li>
           {% else %}
              <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-outline-dark" href="{% url 'add_favorite' product.slug %}"><i class="far fa-heart"></i></a></li>
           {% endif %}
-        <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-dark" href="cart.html">Добавить в корзину</a></li>
+        <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-dark" href="{% url 'to_cart' product.pk 'add' %}">Добавить в корзину</a></li>
       </ul>
     </div>
   </div>

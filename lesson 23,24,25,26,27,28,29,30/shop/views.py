@@ -1,15 +1,18 @@
 from random import randint
-from typing import Any, Dict
 
-from .forms import LoginForm, RegistrationForm, ReviewForm
-from .models import Category, Product, Review, FavoriteProducts, Mail
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, logout
 from django.contrib import messages
+from django.urls import reverse
 from django.views.generic import DetailView, ListView
 from django.shortcuts import render, redirect
 from django.db.models.query import QuerySet
+import stripe
 
+from .forms import LoginForm, RegistrationForm, ReviewForm, CustomerForm, ShippingForm
+from .models import Category, Product, Review, FavoriteProducts, Mail, Customer
+from .utils import CartForAuthenticated, get_cart_data  
+from conf import settings
 
 
 class Page(ListView):
@@ -208,10 +211,100 @@ def send_mail_to_customers(request):
         text = request.POST.get('text')
         mail_list = Mail.objects.all()
         for email in mail_list:
-            mail = send_mail(subject='Test',
-                             message=text,
-                             from_email=settings.EMAIL_HOST_USER,
-                             recipient_list=[email],
-                             fail_silently=False)
+            send_mail(subject='Test',
+                message=text,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[email],
+                fail_silently=False
+            )
     context = {'title': 'Спаммер'}
     return render(request, 'shop/send_mail.html', context)
+
+def cart(request):
+    """Страница корзины"""
+    cart_info = get_cart_data(request)
+    context = {
+        'title': 'Корзина', 
+        'order': cart_info['order'],
+        'order_products': cart_info['order_products'],
+        'cart_total_quantity': cart_info['cart_total_quantity'], 
+        'cart_total_price': cart_info['cart_total_price']
+    }
+    return render(request, 'shop/cart.html', context)
+
+def to_cart(request, product_id, action):
+    """Добавление товара в корзинку"""
+    if request.user.is_authenticated:
+        CartForAuthenticated(
+            request,
+            product_id,
+            action,
+        )
+        return redirect('cart')
+    else:
+        messages.error(request, 'Авторизуйтесь или зарегистрируйтесь, чтобы совершать покупки')
+        return redirect('login_registration')
+    
+def checkout(request):
+    """Страница офорления заказа"""
+    cart_info = get_cart_data(request)
+    context = {
+        'title': 'Оформление заказа',
+        'order': cart_info['order'],
+        'order_products': cart_info['order_products'],
+        'cart_total_quantity': cart_info['cart_total_quantity'],
+        'customer_form': CustomerForm(),
+        'shipping_form': ShippingForm()
+    }
+
+    return render(request, 'shop/checkout.html', context)
+
+def create_checkout_session(request):
+    """Оплата через VISA"""
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    if request.method == 'POST':
+        user_cart = CartForAuthenticated(request)
+        cart_info = user_cart.get_cart_info()
+
+        customer_form = CustomerForm(data=request.POST)
+        if customer_form.is_valid():
+            customer = Customer.objects.get(user=request.user)
+            customer.first_name = customer_form.cleaned_data['first_name']
+            customer.last_name = customer_form.cleaned_data['last_name']
+            customer.email = customer_form.cleaned_data['email']
+            customer.phone = customer_form.cleaned_data['phone']
+            customer.save()
+
+        shipping_form = ShippingForm(data=request.POST)
+        if shipping_form.is_valid():
+            address = shipping_form.save(commit=False)
+            address.customer = Customer.objects.get(
+                user=request.user
+            )
+            address.order = user_cart.get_cart_info()['order']
+            address.save()
+
+        total_price = cart_info['cart_total_price']
+        total_quantity = cart_info['cart_total_quantity']
+
+        session = stripe.checkout.Session.create(
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {'name': 'Aliexpress'},
+                    'unit_amount': int(total_price * 100)
+                },
+                'quantity': total_quantity
+            }],
+            mode='payment',
+            success_url=request.build_absolute_uri(reverse('success')),
+            cancel_url=request.build_absolute_uri(reverse('success'))
+        )
+        return redirect(session.url, 303)
+    
+def successPayment(request):
+    """Оплата прошла успешно"""
+    user_cart = CartForAuthenticated(request)
+    user_cart.clear()
+    messages.success(request, 'Оплата прошла успешно')
+    return render(request, 'shop/success.html')

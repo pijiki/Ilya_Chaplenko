@@ -9,7 +9,6 @@ class LoginForm(AuthenticationForm):
         'class': 'form-control',
         'placeholder': 'Имя пользователя'
     }))
-    
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control',
         'placeholder': 'Пароль'
@@ -45,9 +44,10 @@ class RegistrationForm(UserCreationForm):
 
 
 class ReviewForm(forms.ModelForm):
-    """Отзывы"""
+    """Форма Отзывов"""
 
     class Meta:
+        """Поведенческий харакатер класса"""
         model = Review
         fields = ('text','grade')
         widgets = {
@@ -58,5 +58,53 @@ class ReviewForm(forms.ModelForm):
             'grade': forms.Select(attrs={
                 'class': 'form-control',
                 'placeholder': 'Оценка'
+            })
+        }
+
+class CustomerForm(forms.ModelForm):
+    """Форма Контактной информации"""
+
+    class Meta:
+        """Поведенческий харакатер класса"""
+        model = Customer
+        fields = ('first_name', 'last_name', 'email', 'phone')
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Имя'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Фамилия'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'email@gmail.com'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '+998 XX XXX XXX'
+            })
+        }
+
+class ShippingForm(forms.ModelForm):
+    """Форма Адреса доставки"""
+
+    class Meta:
+        """Поведенческий харакатер класса"""
+        model = ShippingAddress
+        fields = ('city', 'state', 'street')
+        widgets = {
+            'city': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Город'
+            }),
+            'state': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Район'
+            }),
+            'street': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Улица/Дом/Квартира'
             })
         }
