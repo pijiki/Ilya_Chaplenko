@@ -6,12 +6,12 @@ from django.contrib import messages
 from django.urls import reverse
 from django.views.generic import DetailView, ListView
 from django.shortcuts import render, redirect
-from django.db.models.query import QuerySet
 import stripe
 
 from .forms import LoginForm, RegistrationForm, ReviewForm, CustomerForm, ShippingForm
 from .models import Category, Product, Review, FavoriteProducts, Mail, Customer
 from .utils import CartForAuthenticated, get_cart_data  
+from .tasks import send_message, send_spam_text
 from conf import settings
 
 
@@ -43,6 +43,7 @@ class Page(ListView):
 class SubCategoryPage(ListView):
     """Вывод подкатегорий на отдельной странице"""
     model = Product
+    paginate_by = 2
     context_object_name = 'products'
     template_name = 'shop/category_page.html'
 
@@ -199,24 +200,16 @@ def save_mail(request):
     if email:
         try:
             Mail.objects.create(mail=email, user=user)
+            send_message.delay(email)
         except:
             pass
     return redirect('index')
 
 def send_mail_to_customers(request):
     """Рассылка писем"""
-    from conf import settings
-    from django.core.mail import send_mail
     if request.method == 'POST':
         text = request.POST.get('text')
-        mail_list = Mail.objects.all()
-        for email in mail_list:
-            send_mail(subject='Test',
-                message=text,
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[email],
-                fail_silently=False
-            )
+        send_spam_text.delay(text)
     context = {'title': 'Спаммер'}
     return render(request, 'shop/send_mail.html', context)
 

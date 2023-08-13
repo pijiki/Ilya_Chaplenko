@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.utils.translation import gettext_lazy as _
+
 from .models import *
 
 class LoginForm(AuthenticationForm):
@@ -7,11 +9,11 @@ class LoginForm(AuthenticationForm):
 
     username = forms.CharField(widget=forms.TextInput(attrs={
         'class': 'form-control',
-        'placeholder': 'Имя пользователя'
+        'placeholder': _('Имя пользователя')
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control',
-        'placeholder': 'Пароль'
+        'placeholder': _("Пароль")
     }))
 
 class RegistrationForm(UserCreationForm):
@@ -19,12 +21,12 @@ class RegistrationForm(UserCreationForm):
 
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control',
-        'placeholder': 'Пароль'
+        'placeholder': _("Пароль")
     }))
 
     try_password = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control',
-        'placeholder': 'Подтвердите пароль'
+        'placeholder': _('Подтвердите пароль')
     }))
 
     class Meta:
@@ -34,11 +36,11 @@ class RegistrationForm(UserCreationForm):
         widgets = {
             'username': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Имя пользователя'
+                'placeholder': _('Имя пользователя')
             }),
             'email': forms.EmailInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Почта'
+                'placeholder': _('Почта')
             })
         }
 
@@ -53,7 +55,7 @@ class ReviewForm(forms.ModelForm):
         widgets = {
             'text': forms.Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ваш отзыв..'
+                'placeholder': 'Ваш отзыв'
             }),
             'grade': forms.Select(attrs={
                 'class': 'form-control',

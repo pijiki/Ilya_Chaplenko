@@ -1,11 +1,9 @@
 from django.contrib import admin
-from .models import Product, Category, Gallery, Review, Mail, FavoriteProducts, \
-                    Order, OrderProduct, ShippingAddress, Customer
-
-from django.contrib import admin
 from django.utils.safestring import mark_safe
+from modeltranslation.admin import TranslationAdmin
 
-
+from .models import Product, Category, Gallery, Review, FavoriteProducts, Mail, \
+    Customer, Order, OrderProduct, ShippingAddress
 
 class GalleryInline(admin.TabularInline):
     """Галерея товаров"""
@@ -15,9 +13,9 @@ class GalleryInline(admin.TabularInline):
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(TranslationAdmin):
     """Категории"""
-    list_display = ('title', 'parent', 'get_products_count')
+    list_display = ('pk', 'title', 'parent', 'get_products_count')
     prepopulated_fields = {'slug': ('title',)}
 
     def get_products_count(self, obj):
@@ -30,12 +28,12 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(TranslationAdmin):
     """Товары"""
     list_display = ('pk', 'title', 'category', 'quantity', 'price', 'created_at', 'size', 'color', 'get_photo')
     list_editable = ('price', 'quantity', 'size', 'color')
     readonly_fields = ('watched',)
-    list_display_links = ('title',)
+    list_display_links = ('title', 'pk')
     prepopulated_fields = {'slug': ('title',)}
     list_filter = ('title', 'price')
     inlines = (GalleryInline,)
