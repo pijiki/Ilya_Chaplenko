@@ -24,8 +24,16 @@
             </li>
         </ul>
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="{% url 'cart' %}"> <i class="fas fa-dolly-flatbed me-1 text-gray"></i>{% translate 'Корзина' %}<small class="text-gray fw-normal">(2)</small></a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'favorite_products' %}"> <i class="far fa-heart me-1"></i><small class="text-gray fw-normal">{% translate 'Избранные' %}</small></a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'cart' %}"> <i class="fas fa-dolly-flatbed me-1 text-gray"></i>{% translate 'Корзина' %}<small class="text-gray fw-normal">
+            {% if request.user.is_authenticated %}
+              ({{ cart_and_fav.cnt_cart }})
+            {% endif %}
+          </small></a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'favorite_products' %}"> <i class="far fa-heart me-1"></i>{% translate 'Избранные' %}<small class="text-gray fw-normal">
+            {% if request.user.is_authenticated %}
+              ({{ cart_and_fav.cnt_fav }})
+            {% endif %}
+          </small></a></li>
           {% if request.user.is_authenticated %}
           <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}"> <i class="fas fa-user me-1 text-gray fw-normal"></i>
             {% translate 'Выйти' %}</a></li>

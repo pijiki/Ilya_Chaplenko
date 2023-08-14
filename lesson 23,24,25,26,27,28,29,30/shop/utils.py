@@ -1,4 +1,7 @@
-from .models import Order, OrderProduct, Customer, Product
+from django.contrib import messages
+from django.shortcuts import redirect
+
+from .models import Order, OrderProduct, Customer, Product, FavoriteProducts
 
 class CartForAuthenticated:
     """Логика корзины"""
@@ -70,3 +73,19 @@ def get_cart_data(request):
         'cart_total_quantity': cart_info['cart_total_quantity'], 
         'cart_total_price': cart_info['cart_total_price']
     }
+
+def get_fav_and_cart(request):
+    if request.user.is_authenticated:
+        cnt_fav = len(FavoriteProducts.objects.filter(
+            user=request.user
+        ))
+        cart_info = get_cart_data(request)
+        cnt_cart = cart_info['cart_total_quantity']
+        return {
+            'cnt_fav': cnt_fav,
+            'cnt_cart': cnt_cart
+        }
+    else:
+        messages.error(request, 'Авторизуйтесь или Зарегистрируйтесь чтобы совершать покупки!')
+        return redirect('login_registration')
+    

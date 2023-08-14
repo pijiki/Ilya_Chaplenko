@@ -10,7 +10,7 @@ import stripe
 
 from .forms import LoginForm, RegistrationForm, ReviewForm, CustomerForm, ShippingForm
 from .models import Category, Product, Review, FavoriteProducts, Mail, Customer
-from .utils import CartForAuthenticated, get_cart_data  
+from .utils import CartForAuthenticated, get_cart_data, get_fav_and_cart
 from .tasks import send_message, send_spam_text
 from conf import settings
 
@@ -28,7 +28,6 @@ class Page(ListView):
 
     def get_queryset(self):
         """Вывод родительских категорий"""
-
         categories = Category.objects.filter(
             parent=None
         )
@@ -38,6 +37,7 @@ class Page(ListView):
         """Вывод дополнительных элементов на главную страничку"""
         context = super().get_context_data()
         context['top_products'] = Product.objects.order_by('-watched')[:8]
+        context['cart_and_fav'] = get_fav_and_cart(self.request)
         return context
 
 class SubCategoryPage(ListView):
@@ -50,7 +50,6 @@ class SubCategoryPage(ListView):
     def get_queryset(self):
         """Получение всех товаров по категории"""
         type_field = self.request.GET.get('type')
-
         if type_field:
             products = Product.objects.filter(category__slug=type_field)
             return products
@@ -74,6 +73,7 @@ class SubCategoryPage(ListView):
         )
         context['category'] = parent_category
         context['title'] = parent_category.title
+        context['cart_and_fav'] = get_fav_and_cart(self.request)
         return context
     
 
@@ -99,8 +99,7 @@ class ProductPage(DetailView):
                 data.append(random_product)
         context['products'] = data
         context['reviews'] = Review.objects.filter(product=product).order_by('-pk')
-        if self.request.user.is_authenticated:
-            context['review_form'] = ReviewForm()
+        context['cart_and_fav'] = get_fav_and_cart(self.request)
         return context
     
 def login_registration(request):
@@ -192,6 +191,11 @@ class FavoriteProductsView(LoginRequiredMixin, ListView):
         )
         products = [_.product for _ in favorite_products]
         return products
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['cart_and_fav'] = get_fav_and_cart(self.request)
+        return context
 
 def save_mail(request):
     """Собиратель почтовых адресов"""
@@ -215,16 +219,19 @@ def send_mail_to_customers(request):
 
 def cart(request):
     """Страница корзины"""
-    cart_info = get_cart_data(request)
-    context = {
-        'title': 'Корзина', 
-        'order': cart_info['order'],
-        'order_products': cart_info['order_products'],
-        'cart_total_quantity': cart_info['cart_total_quantity'], 
-        'cart_total_price': cart_info['cart_total_price']
-    }
-    return render(request, 'shop/cart.html', context)
+    if request.user.is_authenticated:
+        cart_info = get_cart_data(request)
+        context = {
+            'title': 'Корзина', 
+            'order': cart_info['order'],
+            'order_products': cart_info['order_products'],
+            'cart_total_quantity': cart_info['cart_total_quantity'], 
+            'cart_total_price': cart_info['cart_total_price'],
+            'cart_and_fav': get_fav_and_cart(request)
+        }
+        return render(request, 'shop/cart.html', context)
 
+    
 def to_cart(request, product_id, action):
     """Добавление товара в корзинку"""
     if request.user.is_authenticated:
@@ -241,15 +248,16 @@ def to_cart(request, product_id, action):
 def checkout(request):
     """Страница офорления заказа"""
     cart_info = get_cart_data(request)
+
     context = {
         'title': 'Оформление заказа',
         'order': cart_info['order'],
         'order_products': cart_info['order_products'],
         'cart_total_quantity': cart_info['cart_total_quantity'],
         'customer_form': CustomerForm(),
-        'shipping_form': ShippingForm()
+        'shipping_form': ShippingForm(),
+        'cart_and_fav': get_fav_and_cart(request)
     }
-
     return render(request, 'shop/checkout.html', context)
 
 def create_checkout_session(request):
@@ -271,9 +279,7 @@ def create_checkout_session(request):
         shipping_form = ShippingForm(data=request.POST)
         if shipping_form.is_valid():
             address = shipping_form.save(commit=False)
-            address.customer = Customer.objects.get(
-                user=request.user
-            )
+            address.customer = Customer.objects.get(user=request.user)
             address.order = user_cart.get_cart_info()['order']
             address.save()
 
@@ -284,7 +290,7 @@ def create_checkout_session(request):
             line_items=[{
                 'price_data': {
                     'currency': 'usd',
-                    'product_data': {'name': 'Aliexpress'},
+                    'product_data': {'name': 'Shop'},
                     'unit_amount': int(total_price * 100)
                 },
                 'quantity': total_quantity
@@ -294,10 +300,15 @@ def create_checkout_session(request):
             cancel_url=request.build_absolute_uri(reverse('success'))
         )
         return redirect(session.url, 303)
+
     
 def successPayment(request):
     """Оплата прошла успешно"""
     user_cart = CartForAuthenticated(request)
     user_cart.clear()
+    context = {
+        'title': 'Оплата',
+    }
     messages.success(request, 'Оплата прошла успешно')
-    return render(request, 'shop/success.html')
+    return render(request, 'shop/success.html', context)
+

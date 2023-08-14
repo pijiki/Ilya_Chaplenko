@@ -37,7 +37,6 @@ class Category(models.Model):
         else:
             return 'https://itaros.ru/upload/iblock/81b/lyrg5fswe4xqjb5i4pjmy2ojl0vjnv1o/a80973cf_2379_11eb_8dca_005056000e85_f2197ea0_3318_11ec_9700_20106a300d87.jpg'
 
-
     def __str__(self):
         """Строковое представление"""
         return self.title
